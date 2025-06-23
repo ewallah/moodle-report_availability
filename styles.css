@@ -1,0 +1,19 @@
+#page-report-availability-index .rotated-text {
+    display: inline-block;
+    transform: translate(0, 100%) rotate(-90deg);
+    transform-origin: 0 0;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#page-report-availability-index .rotated-text:after {
+    content: "";
+    float: left;
+    margin-top: 100%;
+}
+
+#page-report-availability-index .rotated-text-container {
+    display: inline-block;
+    max-width: 1em;
+    width: 1em;
+}
