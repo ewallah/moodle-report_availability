@@ -12,8 +12,6 @@
   stopOnSkipped="false"
   beStrictAboutTestsThatDoNotTestAnything="false"
   beStrictAboutOutputDuringTests="true"
-  cacheDirectory=".phpunit.cache"
-  backupStaticProperties="false"
 >
 
   <php>
