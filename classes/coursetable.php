@@ -25,12 +25,12 @@
 namespace report_availability;
 
 use context_course;
+use core\output\html_writer;
+use core\url;
 use core_availability\info_module;
+use core_table\sql_table;
 use core_user\fields;
-use html_writer;
-use moodle_url;
 use stdClass;
-use table_sql;
 
 /**
  * Course table.
@@ -40,7 +40,7 @@ use table_sql;
  * @author    Renaat Debleu <info@eWallah.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class coursetable extends table_sql {
+class coursetable extends sql_table {
     /** @var array All course modules. */
     private array $modules = [];
 
@@ -77,7 +77,7 @@ class coursetable extends table_sql {
             'tifirst' => optional_param('tifirst', '', PARAM_ALPHA),
             'tilast' => optional_param('tilast', '', PARAM_ALPHA),
         ];
-        $this->define_baseurl(new moodle_url('/report/availability/index.php', $params));
+        $this->define_baseurl(new url('/report/availability/index.php', $params));
 
         // Build the SQL query parts.
         [$eparams, $fields, $from, $where, $identityfields] = self::build_sql_parts($course, $currentgroup);
@@ -110,7 +110,7 @@ class coursetable extends table_sql {
             $colname = "mod_$i";
             $columns[] = $colname;
             $this->column_nosort[] = $colname;
-            $editurl = new moodle_url('/course/mod.php', ['update' => $cm->id, 'return' => true, 'sesskey' => $seskey]);
+            $editurl = new url('/course/mod.php', ['update' => $cm->id, 'return' => true, 'sesskey' => $seskey]);
             $url = html_writer::link($editurl, shorten_text(format_string($cm->name, true)));
             $tag = html_writer::tag('span', $url, ['class' => 'rotated-text']);
             $headers[] = html_writer::tag('div', $tag, ['class' => 'rotated-text-container']);
@@ -170,15 +170,24 @@ class coursetable extends table_sql {
      */
     private static function build_sql_parts($course, $groupid): array {
         $context = context_course::instance($course->id);
-        [$esql, $eparams] = get_enrolled_sql($context, '', $groupid);
 
+        [$esql, $eparams] = get_enrolled_sql($context, '', $groupid);
         $p = explode(PHP_EOL, $esql);
+
         // Extract prefix.
         $pre = strstr(str_replace('SELECT DISTINCT ', '', $p[0]), '.', true);
 
+        // Identity fields.
         $identityfields = fields::get_identity_fields($context);
-        $fields = fields::for_userpic()->get_sql($pre)->selects;
-        $fields = (count($identityfields) > 0) ? implode(',', $identityfields) . $fields : substr($fields,1);
+        if ($identityfields) {
+            // Remove custom profile fields.
+            $removefields = array_column(profile_get_custom_fields(), 'shortname');
+            $identityfields = array_diff($identityfields, $removefields);
+        } else {
+            $identityfields = [];
+        }
+        // Fields for user picture.
+        $fields = fields::for_userpic()->including(...$identityfields)->get_sql($pre, false, '', '', false)->selects;
 
         // Extract from.
         $p[1] = str_replace('FROM ', '', $p[1]);

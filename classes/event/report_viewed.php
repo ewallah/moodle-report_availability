@@ -25,7 +25,8 @@
 
 namespace report_availability\event;
 
-use coding_exception;
+use core\exception\coding_exception;
+use core\url;
 
 /**
  * The availability report viewed event.
@@ -70,11 +71,11 @@ class report_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/report/availability/index.php', ['course' => $this->courseid]);
+        return new url('/report/availability/index.php', ['course' => $this->courseid]);
     }
 
     /**
-     * custom validations.
+     * Custom validations.
      *
      * @throws \coding_exception when validation fails.
      * @return void

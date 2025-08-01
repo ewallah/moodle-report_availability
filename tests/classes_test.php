@@ -62,10 +62,11 @@ final class classes_test extends \advanced_testcase {
         set_config('enablecompletion', 1);
         $gen = $this->getDataGenerator();
         $this->setAdminUser();
+        $gen->create_custom_profile_field(['shortname' => 'longtext', 'name' => 'Long text', 'datatype' => 'textarea']);
         $course = $gen->create_course(['enablecompletion' => 1]);
         $context = \context_course::instance($course->id);
         $group = $gen->create_group(['courseid' => $course->id]);
-        $user = $gen->create_and_enrol($course, 'student', ['lastname' => 'Abc']);
+        $user = $gen->create_and_enrol($course, 'student', ['lastname' => 'Abc', 'longtext' => 'short']);
         groups_add_member($group->id, $user->id);
         $teacher = $gen->create_and_enrol($course, 'editingteacher', ['lastname' => 'Bcd']);
         groups_add_member($group->id, $teacher->id);
@@ -176,7 +177,6 @@ final class classes_test extends \advanced_testcase {
     public function test_user_fields(): void {
         set_config("hiddenuserfields", "email");
         set_config("showuseridentity", "");
-        $gen = $this->getDataGenerator();
         $table = new coursetable($this->course, 0, null);
         ob_start();
         $table->wrap_html_start();
@@ -190,7 +190,8 @@ final class classes_test extends \advanced_testcase {
      */
     public function test_course_table_download(): void {
         set_config("hiddenuserfields", "country,city");
-        set_config("showuseridentity", "email,address,phone1,phone2,institution,department,idnumber");
+        // TODO: add longtext.
+        set_config("showuseridentity", "email,address,phone1,phone2,institution,department,idnumber,longtext");
         $table = new coursetable($this->course, 0, 'csv');
         $table->download = 'csv';
         $baseurl = $table->baseurl;

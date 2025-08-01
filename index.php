@@ -67,13 +67,13 @@ raise_memory_limit(MEMORY_HUGE);
 $event = \report_availability\event\report_viewed::create(['context' => $context]);
 $event->trigger();
 
-$url = new moodle_url('/report/availability/index.php', ['courseid' => $courseid, 'group' => $currentgroup]);
-
 $table = new \report_availability\coursetable($course, $currentgroup, $download);
 $table->is_downloading($download, $sreport, $sreport);
 if ($table->is_downloading($download)) {
     $table->out(999, true);
+    exit();
 } else {
+    $url = new moodle_url('/report/availability/index.php', ['courseid' => $courseid, 'group' => $currentgroup]);
     $PAGE->set_course($course);
     $PAGE->set_url($url);
     $PAGE->set_context($context);
@@ -84,6 +84,7 @@ if ($table->is_downloading($download)) {
     echo $OUTPUT->header();
     report_helper::print_report_selector(get_string('availability', 'report_availability'));
     echo groups_allgroups_course_menu($course, $url, true, $currentgroup);
+    echo '<br class="clearer"/><br/>';
     $table->out($cntitems, false);
     echo $OUTPUT->footer($course);
 }
