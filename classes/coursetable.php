@@ -221,5 +221,4 @@ class coursetable extends sql_table {
 
         return $this->is_downloading() ? $available : $OUTPUT->pix_icon('i/grade_' . $condition, $txt);
     }
-
 }
