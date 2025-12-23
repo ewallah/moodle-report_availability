@@ -30,7 +30,7 @@
  * @param stdClass $course The course to object for the report
  * @param stdClass $context The context of the course
  */
-function report_availability_extend_navigation_course($navigation, $course, $context) {
+function report_availability_extend_navigation_course($navigation, $course, $context): void {
     if (has_capability('report/availability:view', $context)) {
         $url = new moodle_url('/report/availability/index.php', ['courseid' => $course->id]);
         $txt = get_string('availability', 'report_availability');

@@ -48,7 +48,7 @@ class coursetable extends sql_table {
     private int $cntactivities = 0;
 
     /** @var int Current course id. */
-    private int $courseid;
+    private readonly int $courseid;
 
     /** @var int Counter for visible modules. */
     private int $counter = 0;
@@ -80,11 +80,11 @@ class coursetable extends sql_table {
         $this->define_baseurl(new url('/report/availability/index.php', $params));
 
         // Build the SQL query parts.
-        [$eparams, $fields, $from, $where, $identityfields] = self::build_sql_parts($course, $currentgroup);
+        [$eparams, $fields, $from, $where, $identityfields] = $this->build_sql_parts($course, $currentgroup);
         $this->identityfields = $identityfields;
         $this->set_sql($fields, $from, $where, $eparams);
-
-        $columns = $headers = [];
+        $columns = [];
+        $headers = [];
 
         // Include a user picture column if not in download mode.
         if (!$this->download) {
@@ -107,7 +107,7 @@ class coursetable extends sql_table {
         $i = 0;
         $seskey = sesskey();
         foreach ($modinfo->get_cms() as $cm) {
-            $colname = "mod_$i";
+            $colname = "mod_{$i}";
             $columns[] = $colname;
             $this->column_nosort[] = $colname;
             $editurl = new url('/course/mod.php', ['update' => $cm->id, 'return' => true, 'sesskey' => $seskey]);
@@ -117,6 +117,7 @@ class coursetable extends sql_table {
             $this->modules[] = $cm;
             $i++;
         }
+
         $this->cntactivities = $i;
 
         // Add the progress column.
@@ -142,7 +143,7 @@ class coursetable extends sql_table {
         global $OUTPUT;
         $arr = [];
         foreach (array_keys($this->columns) as $column) {
-            if (preg_match('/mod_([\d]+)/', $column, $matches)) {
+            if (preg_match('/mod_([\d]+)/', (string) $column, $matches)) {
                 $field = intval($matches[1]);
                 $formatted = self::pix_icon($field, $row->id);
             } else if (in_array($column, $this->identityfields)) {
@@ -153,11 +154,13 @@ class coursetable extends sql_table {
                 $formatted = $this->counter . '/' . $this->cntactivities;
                 $this->counter = 0;
             } else {
-                $name = "col_$column";
+                $name = "col_{$column}";
                 $formatted = method_exists($this, $name) ? $this->$name($row) : $this->other_cols($column, $row);
             }
+
             $arr[$column] = $formatted;
         }
+
         return $arr;
     }
 
@@ -166,13 +169,12 @@ class coursetable extends sql_table {
      *
      * @param stdClass $course
      * @param int $groupid
-     * @return array
      */
-    private static function build_sql_parts($course, $groupid): array {
+    private function build_sql_parts($course, $groupid): array {
         $context = context_course::instance($course->id);
 
         [$esql, $eparams] = get_enrolled_sql($context, '', $groupid);
-        $p = explode(PHP_EOL, $esql);
+        $p = explode(PHP_EOL, (string) $esql);
 
         // Extract prefix.
         $pre = strstr(str_replace('SELECT DISTINCT ', '', $p[0]), '.', true);
@@ -186,6 +188,7 @@ class coursetable extends sql_table {
         } else {
             $identityfields = [];
         }
+
         // Fields for user picture.
         $fields = fields::for_userpic()->including(...$identityfields)->get_sql($pre, false, '', '', false)->selects;
 
@@ -209,7 +212,6 @@ class coursetable extends sql_table {
      * @param int $modid
      * @param int $userid
      * @param string $txt
-     * @return string
      */
     private function pix_icon(int $modid, int $userid, string $txt = ''): string {
         global $OUTPUT;

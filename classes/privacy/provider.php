@@ -35,8 +35,6 @@ namespace report_availability\privacy;
 class provider implements \core_privacy\local\metadata\null_provider {
     /**
      * This plugin stores no data.
-     *
-     * @return  string
      */
     public static function get_reason(): string {
         return 'privacy:metadata';

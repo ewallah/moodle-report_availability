@@ -25,7 +25,7 @@
 
 use core\report_helper;
 
-require_once(dirname(__FILE__) . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/tablelib.php');
 
 
@@ -72,19 +72,19 @@ $table->is_downloading($download, $sreport, $sreport);
 if ($table->is_downloading($download)) {
     $table->out(999, true);
     exit();
-} else {
-    $url = new moodle_url('/report/availability/index.php', ['courseid' => $courseid, 'group' => $currentgroup]);
-    $PAGE->set_course($course);
-    $PAGE->set_url($url);
-    $PAGE->set_context($context);
-    $PAGE->set_pagelayout('report');
-    $PAGE->set_title($sreport);
-    $PAGE->set_heading($course->fullname);
-    $PAGE->set_cacheable(false);
-    echo $OUTPUT->header();
-    report_helper::print_report_selector(get_string('availability', 'report_availability'));
-    echo groups_allgroups_course_menu($course, $url, true, $currentgroup);
-    echo '<br class="clearer"/><br/>';
-    $table->out($cntitems, false);
-    echo $OUTPUT->footer($course);
 }
+
+$url = new moodle_url('/report/availability/index.php', ['courseid' => $courseid, 'group' => $currentgroup]);
+$PAGE->set_course($course);
+$PAGE->set_url($url);
+$PAGE->set_context($context);
+$PAGE->set_pagelayout('report');
+$PAGE->set_title($sreport);
+$PAGE->set_heading($course->fullname);
+$PAGE->set_cacheable(false);
+echo $OUTPUT->header();
+report_helper::print_report_selector(get_string('availability', 'report_availability'));
+echo groups_allgroups_course_menu($course, $url, true, $currentgroup);
+echo '<br class="clearer"/><br/>';
+$table->out($cntitems, false);
+echo $OUTPUT->footer($course);

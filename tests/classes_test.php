@@ -78,6 +78,7 @@ final class classes_test extends \advanced_testcase {
         $pagegen = $gen->get_plugin_generator('mod_page');
         $pagegen->create_instance(['course' => $course->id, 'name' => 'A', 'completion' => 1]);
         $pagegen->create_instance(['course' => $course->id, 'name' => 'B', 'completion' => 1, 'visible' => false]);
+
         $notavailable = '{"op":"|","show":true,"c":[{"type":"group","id":' . $group->id . '}]}';
 
         $quiz = $gen->create_module('quiz', ['name' => "Test quiz 1", 'course' => $course->id, 'completion' => 1]);
@@ -89,13 +90,14 @@ final class classes_test extends \advanced_testcase {
         $DB->set_field('course_modules', 'availability', $notavailable, ['id' => $modcontext->id]);
 
         for ($i = 1; $i < 30; $i++) {
-            $assign = $gen->create_module('assign', ['name' => "Test assign a$i", 'course' => $course->id, 'completion' => 1]);
+            $assign = $gen->create_module('assign', ['name' => "Test assign a{$i}", 'course' => $course->id, 'completion' => 1]);
             $modcontext = get_coursemodule_from_instance('assign', $assign->id, $course->id);
             $DB->set_field('course_modules', 'availability', $notavailable, ['id' => $modcontext->id]);
             if ($i === 20) {
                 $DB->set_field('course_modules', 'visible', false, ['id' => $modcontext->id]);
             }
         }
+
         $gen->create_and_enrol($course, 'student', ['lastname' => 'Efg']);
         $this->course = $course;
         $this->user = $user2;
@@ -116,12 +118,14 @@ final class classes_test extends \advanced_testcase {
         ob_start();
         $table->wrap_html_start();
         $table->out(99, false);
+
         $data = ob_get_clean();
         $this->assertStringContainsString($this->user->firstname, $data);
         $table = new coursetable($this->course, $this->groupid, '');
         ob_start();
         $table->wrap_html_start();
         $table->out(99, false);
+
         $data = ob_get_clean();
         $this->assertStringContainsString($this->user->firstname, $data);
         // TODO: If teacher is not part of group, then he/she should not have access.
@@ -131,6 +135,7 @@ final class classes_test extends \advanced_testcase {
         ob_start();
         $table->wrap_html_start();
         $table->out(99, false);
+
         $data = ob_get_clean();
         $arr = [
             $this->user->firstname,
@@ -162,6 +167,7 @@ final class classes_test extends \advanced_testcase {
         foreach ($arr as $str) {
             $this->assertStringContainsString($str, $data);
         }
+
         $arr = [
             'data-sortby="c6',
             'data-sortby="progress',
@@ -181,6 +187,7 @@ final class classes_test extends \advanced_testcase {
         ob_start();
         $table->wrap_html_start();
         $table->out(99, false);
+
         $data = ob_get_clean();
         $this->assertStringNotContainsString('tsort=email', $data);
     }
@@ -194,6 +201,7 @@ final class classes_test extends \advanced_testcase {
         set_config("showuseridentity", "email,address,phone1,phone2,institution,department,idnumber,longtext");
         $table = new coursetable($this->course, 0, 'csv');
         $table->download = 'csv';
+
         $baseurl = $table->baseurl;
         $this->assertStringContainsString('/report/availability/index.php?courseid=' . $this->course->id, $baseurl->out());
         $this->assertStringContainsString('&amp;group=0&amp;page=0&amp;items=25&amp;tifirst&amp;tilast', $baseurl->out());
@@ -215,6 +223,7 @@ final class classes_test extends \advanced_testcase {
         $page = new \moodle_page();
         $page->set_url(new \moodle_url('/course/view.php', ['id' => $this->course->id]));
         $page->set_context($context);
+
         $tree = new \global_navigation($page);
         report_availability_extend_navigation_course($tree, $this->course, $context);
     }
