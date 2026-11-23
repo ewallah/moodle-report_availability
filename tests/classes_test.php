@@ -24,6 +24,7 @@
  */
 
 namespace report_availability;
+
 use PHPUnit\Framework\Attributes\CoversClass;
 use stdClass;
 
